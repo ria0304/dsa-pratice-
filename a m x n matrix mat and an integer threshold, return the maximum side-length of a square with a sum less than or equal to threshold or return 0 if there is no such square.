@@ -1,0 +1,42 @@
+int maxSideLength(int** mat, int matSize, int* matColSize, int threshold) {
+    if (matSize == 0 || matColSize[0] == 0) return 0;
+    int m = matSize, n = matColSize[0];
+    int** p = (int**)malloc((m + 1) * sizeof(int*));
+    for (int i = 0; i <= m; i++) {
+        p[i] = (int*)malloc((n + 1) * sizeof(int));
+        for (int j = 0; j <= n; j++) {
+            p[i][j] = 0;
+        }
+    }
+    for (int i = 1; i <= m; i++) {
+        for (int j = 1; j <= n; j++) {
+            p[i][j] = p[i - 1][j] + p[i][j - 1] - p[i - 1][j - 1] + mat[i - 1][j - 1];
+        }
+    }
+    int l = 0;
+    int r = (m < n) ? m : n;
+    while (l < r) {
+        int mid = (l + r + 1) / 2;
+        int found = 0;
+        for (int i = 0; i <= m - mid; i++) {
+            for (int j = 0; j <= n - mid; j++) {
+                int sum = p[i + mid][j + mid] - p[i][j + mid] - p[i + mid][j] + p[i][j];
+                if (sum <= threshold) {
+                    found = 1;
+                    break;
+                }
+            }
+            if (found) break;
+        }
+        if (found) {
+            l = mid;
+        } else {
+            r = mid - 1;
+        }
+    }
+    for (int i = 0; i <= m; i++) {
+        free(p[i]);
+    }
+    free(p);
+    return l;
+}
