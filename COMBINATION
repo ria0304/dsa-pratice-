@@ -1,0 +1,45 @@
+/**
+ * Return an array of arrays of size *returnSize.
+ * The sizes of the arrays are returned as *returnColumnSizes array.
+ * Note: Both returned array and *columnSizes array must be malloced, assume caller calls free().
+ */
+#include <stdlib.h>
+#include <string.h>
+
+int binom(int n, int k) {
+    if (k > n - k) k = n - k;
+    long long res = 1;
+    for (int i = 1; i <= k; i++) {
+        res *= (n - i + 1);
+        res /= i;
+    }
+    return (int)res;
+}
+
+void backtrack(int start, int remaining, int* current, int currentSize, int** result, int* resultSize, int n, int k) {
+    if (remaining == 0) {
+        result[*resultSize] = (int*)malloc(k * sizeof(int));
+        memcpy(result[*resultSize], current, k * sizeof(int));
+        (*resultSize)++;
+        return;
+    }
+    for (int i = start; i <= n; i++) {
+        current[currentSize] = i;
+        backtrack(i + 1, remaining - 1, current, currentSize + 1, result, resultSize, n, k);
+    }
+}
+
+int** combine(int n, int k, int* returnSize, int** returnColumnSizes) {
+    int total = binom(n, k);
+    int** result = (int**)malloc(total * sizeof(int*));
+    int resultSize = 0;
+    int* current = (int*)malloc(k * sizeof(int));
+    backtrack(1, k, current, 0, result, &resultSize, n, k);
+    free(current);
+    *returnColumnSizes = (int*)malloc(resultSize * sizeof(int));
+    for (int i = 0; i < resultSize; i++) {
+        (*returnColumnSizes)[i] = k;
+    }
+    *returnSize = resultSize;
+    return result;
+}
