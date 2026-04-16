@@ -1,0 +1,57 @@
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int lowerBound(int *arr, int size, int target) {
+    int left = 0, right = size;
+    while (left < right) {
+        int mid = left + (right - left) / 2;
+        if (arr[mid] < target)
+            left = mid + 1;
+        else
+            right = mid;
+    }
+    return left;
+}
+int* solveQueries(int* nums, int numsSize, int* queries, int queriesSize, int* returnSize) {
+    int *freq = calloc(1000001, sizeof(int));
+    for (int i = 0; i < numsSize; i++)
+        freq[nums[i]]++;
+
+    int **pos = calloc(1000001, sizeof(int *));
+    int *idx  = calloc(1000001, sizeof(int));
+
+    for (int i = 0; i < numsSize; i++) {
+        int v = nums[i];
+        if (!pos[v])
+            pos[v] = malloc(freq[v] * sizeof(int));
+    }
+    for (int i = 0; i < numsSize; i++)
+        pos[nums[i]][idx[nums[i]]++] = i;
+
+    int *ans = malloc(queriesSize * sizeof(int));
+    for (int i = 0; i < queriesSize; i++) {
+        int q   = queries[i];
+        int val = nums[q];
+        int cnt = freq[val];
+
+        if (cnt == 1) { ans[i] = -1; continue; }
+
+        int p    = lowerBound(pos[val], cnt, q);
+        int prev = pos[val][(p - 1 + cnt) % cnt];
+        int next = pos[val][(p + 1)       % cnt];
+
+        int d1 = abs(q - prev);
+        d1 = d1 < numsSize - d1 ? d1 : numsSize - d1;
+        int d2 = abs(q - next);
+        d2 = d2 < numsSize - d2 ? d2 : numsSize - d2;
+
+        ans[i] = d1 < d2 ? d1 : d2;
+    }
+
+    for (int i = 0; i < numsSize; i++)
+        if (pos[nums[i]]) { free(pos[nums[i]]); pos[nums[i]] = NULL; }
+
+    free(pos); free(freq); free(idx);
+    *returnSize = queriesSize;
+    return ans;
+}
